@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<settings>
+  <preference name="lilypondBackend" value="ps"/>
+  <preference name="pdfPath" value="/usr/bin/evince"/>
+  <preference name="lilypondVersion" value="2.16.0"/>
+  <preference name="graphicsPath" value="/usr/bin/eog"/>
+  <preference name="warnings" value="1"/>
+  <preference name="showFormat" value="lilypond"/>
+  <localCorpusSettings/>
+  <preference name="vectorPath"/>
+  <preference name="writeFormat" value="lilypond"/>
+  <preference name="lilypondPath" value="/usr/bin/lilypond"/>
+  <preference name="directoryScratch"/>
+  <preference name="lilypondFormat" value="pdf"/>
+  <preference name="debug" value="0"/>
+  <preference name="musicxmlPath" value="/usr/bin/musescore"/>
+  <preference name="musescoreDirectPNGPath" value="/usr/bin/musescore"/>
+
+  <preference name="autoDownload" value="ask"/>
+  <preference name="midiPath" value="/usr/bin/timidity"/>
+</settings>
