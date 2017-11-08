@@ -11,9 +11,14 @@ This jupyter notebook contains the code to
 
 Files:
 
-- MusicAccompanistLearning.ipynb: the jupyter notebook, I used jupiter notebook 5.0.0 installed via Anaconda Navigator 1.6.9 on an Ubuntu Studio installation
+- MusicAccompanistLearning.ipynb: the jupyter notebook to learn the Bach music
+
+- MusicAccompanistApplication.ipynb: the creation of the application network
 
 - .music21rc : configuration for music21 external programs, important are musicxmlPath and musescoreDirectPNGPath for the visualization of the scores and midiPath for MIDI output
+
+Environment:
+I used jupiter notebook 5.0.0 installed via Anaconda Navigator 1.6.9 on an Ubuntu Studio installation
 
 Credits:
 Danijar Hafner for great hints on how to structure the network (https://danijar.com/structuring-your-tensorflow-models)
