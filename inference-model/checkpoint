@@ -1,0 +1,2 @@
+model_checkpoint_path: "/home/lucky/AnacondaProjects/neuronal-music-accompanist-bach/inference-model/BachAccompanist"
+all_model_checkpoint_paths: "/home/lucky/AnacondaProjects/neuronal-music-accompanist-bach/inference-model/BachAccompanist"
