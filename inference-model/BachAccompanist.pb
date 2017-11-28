@@ -19,6 +19,35 @@ node {
   }
 }
 node {
+  name: "init_states"
+  op: "Placeholder"
+  attr {
+    key: "dtype"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "shape"
+    value {
+      shape {
+        dim {
+          size: 3
+        }
+        dim {
+          size: 2
+        }
+        dim {
+          size: 1
+        }
+        dim {
+          size: 300
+        }
+      }
+    }
+  }
+}
+node {
   name: "Cast"
   op: "Cast"
   input: "input"
@@ -555,7 +584,7 @@ node {
   }
 }
 node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState/Const"
+  name: "shape_as_tensor"
   op: "Const"
   attr {
     key: "dtype"
@@ -569,41 +598,14 @@ node {
       tensor {
         dtype: DT_INT32
         tensor_shape {
-          dim {
-            size: 1
-          }
         }
-        int_val: 1
+        int_val: 3
       }
     }
   }
 }
 node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState/Const_1"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 300
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState/concat/axis"
+  name: "split/split_dim"
   op: "Const"
   attr {
     key: "dtype"
@@ -624,32 +626,85 @@ node {
   }
 }
 node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState/concat"
-  op: "ConcatV2"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState/Const"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState/Const_1"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState/concat/axis"
+  name: "split"
+  op: "Split"
+  input: "split/split_dim"
+  input: "init_states"
   attr {
-    key: "N"
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "num_split"
+    value {
+      i: 3
+    }
+  }
+}
+node {
+  name: "Const"
+  op: "Const"
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT32
+        tensor_shape {
+        }
+        int_val: 2
+      }
+    }
+  }
+}
+node {
+  name: "split_1/split_dim"
+  op: "Const"
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT32
+        tensor_shape {
+        }
+        int_val: 1
+      }
+    }
+  }
+}
+node {
+  name: "split_1"
+  op: "Split"
+  input: "split_1/split_dim"
+  input: "split"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "num_split"
     value {
       i: 2
     }
   }
-  attr {
-    key: "T"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "Tidx"
-    value {
-      type: DT_INT32
-    }
-  }
 }
 node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState/Const_2"
+  name: "Reshape_1/shape"
   op: "Const"
   attr {
     key: "dtype"
@@ -664,8 +719,110 @@ node {
         dtype: DT_INT32
         tensor_shape {
           dim {
-            size: 1
+            size: 2
           }
+        }
+        tensor_content: "\001\000\000\000\377\377\377\377"
+      }
+    }
+  }
+}
+node {
+  name: "Reshape_1"
+  op: "Reshape"
+  input: "split_1"
+  input: "Reshape_1/shape"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tshape"
+    value {
+      type: DT_INT32
+    }
+  }
+}
+node {
+  name: "Reshape_2/shape"
+  op: "Const"
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT32
+        tensor_shape {
+          dim {
+            size: 2
+          }
+        }
+        tensor_content: "\001\000\000\000\377\377\377\377"
+      }
+    }
+  }
+}
+node {
+  name: "Reshape_2"
+  op: "Reshape"
+  input: "split_1:1"
+  input: "Reshape_2/shape"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tshape"
+    value {
+      type: DT_INT32
+    }
+  }
+}
+node {
+  name: "Const_1"
+  op: "Const"
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT32
+        tensor_shape {
+        }
+        int_val: 2
+      }
+    }
+  }
+}
+node {
+  name: "split_2/split_dim"
+  op: "Const"
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT32
+        tensor_shape {
         }
         int_val: 1
       }
@@ -673,158 +830,25 @@ node {
   }
 }
 node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState/Const_3"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 300
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState/zeros/Const"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_FLOAT
-        tensor_shape {
-        }
-        float_val: 0.0
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState/zeros"
-  op: "Fill"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState/concat"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState/zeros/Const"
+  name: "split_2"
+  op: "Split"
+  input: "split_2/split_dim"
+  input: "split:1"
   attr {
     key: "T"
     value {
       type: DT_FLOAT
     }
   }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState/Const_4"
-  op: "Const"
   attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 1
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState/Const_5"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 300
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState/concat_1/axis"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-        }
-        int_val: 0
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState/concat_1"
-  op: "ConcatV2"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState/Const_4"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState/Const_5"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState/concat_1/axis"
-  attr {
-    key: "N"
+    key: "num_split"
     value {
       i: 2
     }
   }
-  attr {
-    key: "T"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "Tidx"
-    value {
-      type: DT_INT32
-    }
-  }
 }
 node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState/Const_6"
+  name: "Reshape_3/shape"
   op: "Const"
   attr {
     key: "dtype"
@@ -839,8 +863,110 @@ node {
         dtype: DT_INT32
         tensor_shape {
           dim {
-            size: 1
+            size: 2
           }
+        }
+        tensor_content: "\001\000\000\000\377\377\377\377"
+      }
+    }
+  }
+}
+node {
+  name: "Reshape_3"
+  op: "Reshape"
+  input: "split_2"
+  input: "Reshape_3/shape"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tshape"
+    value {
+      type: DT_INT32
+    }
+  }
+}
+node {
+  name: "Reshape_4/shape"
+  op: "Const"
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT32
+        tensor_shape {
+          dim {
+            size: 2
+          }
+        }
+        tensor_content: "\001\000\000\000\377\377\377\377"
+      }
+    }
+  }
+}
+node {
+  name: "Reshape_4"
+  op: "Reshape"
+  input: "split_2:1"
+  input: "Reshape_4/shape"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tshape"
+    value {
+      type: DT_INT32
+    }
+  }
+}
+node {
+  name: "Const_2"
+  op: "Const"
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT32
+        tensor_shape {
+        }
+        int_val: 2
+      }
+    }
+  }
+}
+node {
+  name: "split_3/split_dim"
+  op: "Const"
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT32
+        tensor_shape {
         }
         int_val: 1
       }
@@ -848,158 +974,25 @@ node {
   }
 }
 node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState/Const_7"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 300
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState/zeros_1/Const"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_FLOAT
-        tensor_shape {
-        }
-        float_val: 0.0
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState/zeros_1"
-  op: "Fill"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState/concat_1"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState/zeros_1/Const"
+  name: "split_3"
+  op: "Split"
+  input: "split_3/split_dim"
+  input: "split:2"
   attr {
     key: "T"
     value {
       type: DT_FLOAT
     }
   }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_1/Const"
-  op: "Const"
   attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 1
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_1/Const_1"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 300
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_1/concat/axis"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-        }
-        int_val: 0
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_1/concat"
-  op: "ConcatV2"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState_1/Const"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState_1/Const_1"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState_1/concat/axis"
-  attr {
-    key: "N"
+    key: "num_split"
     value {
       i: 2
     }
   }
-  attr {
-    key: "T"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "Tidx"
-    value {
-      type: DT_INT32
-    }
-  }
 }
 node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_1/Const_2"
+  name: "Reshape_5/shape"
   op: "Const"
   attr {
     key: "dtype"
@@ -1014,16 +1007,34 @@ node {
         dtype: DT_INT32
         tensor_shape {
           dim {
-            size: 1
+            size: 2
           }
         }
-        int_val: 1
+        tensor_content: "\001\000\000\000\377\377\377\377"
       }
     }
   }
 }
 node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_1/Const_3"
+  name: "Reshape_5"
+  op: "Reshape"
+  input: "split_3"
+  input: "Reshape_5/shape"
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "Tshape"
+    value {
+      type: DT_INT32
+    }
+  }
+}
+node {
+  name: "Reshape_6/shape"
   op: "Const"
   attr {
     key: "dtype"
@@ -1038,639 +1049,19 @@ node {
         dtype: DT_INT32
         tensor_shape {
           dim {
-            size: 1
+            size: 2
           }
         }
-        int_val: 300
+        tensor_content: "\001\000\000\000\377\377\377\377"
       }
     }
   }
 }
 node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_1/zeros/Const"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_FLOAT
-        tensor_shape {
-        }
-        float_val: 0.0
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_1/zeros"
-  op: "Fill"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState_1/concat"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState_1/zeros/Const"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_1/Const_4"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 1
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_1/Const_5"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 300
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_1/concat_1/axis"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-        }
-        int_val: 0
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_1/concat_1"
-  op: "ConcatV2"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState_1/Const_4"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState_1/Const_5"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState_1/concat_1/axis"
-  attr {
-    key: "N"
-    value {
-      i: 2
-    }
-  }
-  attr {
-    key: "T"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "Tidx"
-    value {
-      type: DT_INT32
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_1/Const_6"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 1
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_1/Const_7"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 300
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_1/zeros_1/Const"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_FLOAT
-        tensor_shape {
-        }
-        float_val: 0.0
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_1/zeros_1"
-  op: "Fill"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState_1/concat_1"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState_1/zeros_1/Const"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_2/Const"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 1
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_2/Const_1"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 300
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_2/concat/axis"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-        }
-        int_val: 0
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_2/concat"
-  op: "ConcatV2"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState_2/Const"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState_2/Const_1"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState_2/concat/axis"
-  attr {
-    key: "N"
-    value {
-      i: 2
-    }
-  }
-  attr {
-    key: "T"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "Tidx"
-    value {
-      type: DT_INT32
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_2/Const_2"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 1
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_2/Const_3"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 300
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_2/zeros/Const"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_FLOAT
-        tensor_shape {
-        }
-        float_val: 0.0
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_2/zeros"
-  op: "Fill"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState_2/concat"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState_2/zeros/Const"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_2/Const_4"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 1
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_2/Const_5"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 300
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_2/concat_1/axis"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-        }
-        int_val: 0
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_2/concat_1"
-  op: "ConcatV2"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState_2/Const_4"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState_2/Const_5"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState_2/concat_1/axis"
-  attr {
-    key: "N"
-    value {
-      i: 2
-    }
-  }
-  attr {
-    key: "T"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "Tidx"
-    value {
-      type: DT_INT32
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_2/Const_6"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 1
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_2/Const_7"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_INT32
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_INT32
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        int_val: 300
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_2/zeros_1/Const"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_FLOAT
-        tensor_shape {
-        }
-        float_val: 0.0
-      }
-    }
-  }
-}
-node {
-  name: "MultiRNNCellZeroState/LSTMCellZeroState_2/zeros_1"
-  op: "Fill"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState_2/concat_1"
-  input: "MultiRNNCellZeroState/LSTMCellZeroState_2/zeros_1/Const"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-}
-node {
-  name: "zeros"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_FLOAT
-        tensor_shape {
-          dim {
-            size: 1
-          }
-          dim {
-            size: 300
-          }
-        }
-        float_val: 0.0
-      }
-    }
-  }
-}
-node {
-  name: "rnn_state_c_0"
-  op: "VariableV2"
-  attr {
-    key: "container"
-    value {
-      s: ""
-    }
-  }
-  attr {
-    key: "dtype"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "shape"
-    value {
-      shape {
-        dim {
-          size: 1
-        }
-        dim {
-          size: 300
-        }
-      }
-    }
-  }
-  attr {
-    key: "shared_name"
-    value {
-      s: ""
-    }
-  }
-}
-node {
-  name: "rnn_state_c_0/Assign"
-  op: "Assign"
-  input: "rnn_state_c_0"
-  input: "zeros"
+  name: "Reshape_6"
+  op: "Reshape"
+  input: "split_3:1"
+  input: "Reshape_6/shape"
   attr {
     key: "T"
     value {
@@ -1678,607 +1069,9 @@ node {
     }
   }
   attr {
-    key: "_class"
+    key: "Tshape"
     value {
-      list {
-        s: "loc:@rnn_state_c_0"
-      }
-    }
-  }
-  attr {
-    key: "use_locking"
-    value {
-      b: true
-    }
-  }
-  attr {
-    key: "validate_shape"
-    value {
-      b: true
-    }
-  }
-}
-node {
-  name: "rnn_state_c_0/read"
-  op: "Identity"
-  input: "rnn_state_c_0"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@rnn_state_c_0"
-      }
-    }
-  }
-}
-node {
-  name: "zeros_1"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_FLOAT
-        tensor_shape {
-          dim {
-            size: 1
-          }
-          dim {
-            size: 300
-          }
-        }
-        float_val: 0.0
-      }
-    }
-  }
-}
-node {
-  name: "rnn_state_h_0"
-  op: "VariableV2"
-  attr {
-    key: "container"
-    value {
-      s: ""
-    }
-  }
-  attr {
-    key: "dtype"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "shape"
-    value {
-      shape {
-        dim {
-          size: 1
-        }
-        dim {
-          size: 300
-        }
-      }
-    }
-  }
-  attr {
-    key: "shared_name"
-    value {
-      s: ""
-    }
-  }
-}
-node {
-  name: "rnn_state_h_0/Assign"
-  op: "Assign"
-  input: "rnn_state_h_0"
-  input: "zeros_1"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@rnn_state_h_0"
-      }
-    }
-  }
-  attr {
-    key: "use_locking"
-    value {
-      b: true
-    }
-  }
-  attr {
-    key: "validate_shape"
-    value {
-      b: true
-    }
-  }
-}
-node {
-  name: "rnn_state_h_0/read"
-  op: "Identity"
-  input: "rnn_state_h_0"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@rnn_state_h_0"
-      }
-    }
-  }
-}
-node {
-  name: "zeros_2"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_FLOAT
-        tensor_shape {
-          dim {
-            size: 1
-          }
-          dim {
-            size: 300
-          }
-        }
-        float_val: 0.0
-      }
-    }
-  }
-}
-node {
-  name: "rnn_state_c_1"
-  op: "VariableV2"
-  attr {
-    key: "container"
-    value {
-      s: ""
-    }
-  }
-  attr {
-    key: "dtype"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "shape"
-    value {
-      shape {
-        dim {
-          size: 1
-        }
-        dim {
-          size: 300
-        }
-      }
-    }
-  }
-  attr {
-    key: "shared_name"
-    value {
-      s: ""
-    }
-  }
-}
-node {
-  name: "rnn_state_c_1/Assign"
-  op: "Assign"
-  input: "rnn_state_c_1"
-  input: "zeros_2"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@rnn_state_c_1"
-      }
-    }
-  }
-  attr {
-    key: "use_locking"
-    value {
-      b: true
-    }
-  }
-  attr {
-    key: "validate_shape"
-    value {
-      b: true
-    }
-  }
-}
-node {
-  name: "rnn_state_c_1/read"
-  op: "Identity"
-  input: "rnn_state_c_1"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@rnn_state_c_1"
-      }
-    }
-  }
-}
-node {
-  name: "zeros_3"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_FLOAT
-        tensor_shape {
-          dim {
-            size: 1
-          }
-          dim {
-            size: 300
-          }
-        }
-        float_val: 0.0
-      }
-    }
-  }
-}
-node {
-  name: "rnn_state_h_1"
-  op: "VariableV2"
-  attr {
-    key: "container"
-    value {
-      s: ""
-    }
-  }
-  attr {
-    key: "dtype"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "shape"
-    value {
-      shape {
-        dim {
-          size: 1
-        }
-        dim {
-          size: 300
-        }
-      }
-    }
-  }
-  attr {
-    key: "shared_name"
-    value {
-      s: ""
-    }
-  }
-}
-node {
-  name: "rnn_state_h_1/Assign"
-  op: "Assign"
-  input: "rnn_state_h_1"
-  input: "zeros_3"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@rnn_state_h_1"
-      }
-    }
-  }
-  attr {
-    key: "use_locking"
-    value {
-      b: true
-    }
-  }
-  attr {
-    key: "validate_shape"
-    value {
-      b: true
-    }
-  }
-}
-node {
-  name: "rnn_state_h_1/read"
-  op: "Identity"
-  input: "rnn_state_h_1"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@rnn_state_h_1"
-      }
-    }
-  }
-}
-node {
-  name: "zeros_4"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_FLOAT
-        tensor_shape {
-          dim {
-            size: 1
-          }
-          dim {
-            size: 300
-          }
-        }
-        float_val: 0.0
-      }
-    }
-  }
-}
-node {
-  name: "rnn_state_c_2"
-  op: "VariableV2"
-  attr {
-    key: "container"
-    value {
-      s: ""
-    }
-  }
-  attr {
-    key: "dtype"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "shape"
-    value {
-      shape {
-        dim {
-          size: 1
-        }
-        dim {
-          size: 300
-        }
-      }
-    }
-  }
-  attr {
-    key: "shared_name"
-    value {
-      s: ""
-    }
-  }
-}
-node {
-  name: "rnn_state_c_2/Assign"
-  op: "Assign"
-  input: "rnn_state_c_2"
-  input: "zeros_4"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@rnn_state_c_2"
-      }
-    }
-  }
-  attr {
-    key: "use_locking"
-    value {
-      b: true
-    }
-  }
-  attr {
-    key: "validate_shape"
-    value {
-      b: true
-    }
-  }
-}
-node {
-  name: "rnn_state_c_2/read"
-  op: "Identity"
-  input: "rnn_state_c_2"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@rnn_state_c_2"
-      }
-    }
-  }
-}
-node {
-  name: "zeros_5"
-  op: "Const"
-  attr {
-    key: "dtype"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_FLOAT
-        tensor_shape {
-          dim {
-            size: 1
-          }
-          dim {
-            size: 300
-          }
-        }
-        float_val: 0.0
-      }
-    }
-  }
-}
-node {
-  name: "rnn_state_h_2"
-  op: "VariableV2"
-  attr {
-    key: "container"
-    value {
-      s: ""
-    }
-  }
-  attr {
-    key: "dtype"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "shape"
-    value {
-      shape {
-        dim {
-          size: 1
-        }
-        dim {
-          size: 300
-        }
-      }
-    }
-  }
-  attr {
-    key: "shared_name"
-    value {
-      s: ""
-    }
-  }
-}
-node {
-  name: "rnn_state_h_2/Assign"
-  op: "Assign"
-  input: "rnn_state_h_2"
-  input: "zeros_5"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@rnn_state_h_2"
-      }
-    }
-  }
-  attr {
-    key: "use_locking"
-    value {
-      b: true
-    }
-  }
-  attr {
-    key: "validate_shape"
-    value {
-      b: true
-    }
-  }
-}
-node {
-  name: "rnn_state_h_2/read"
-  op: "Identity"
-  input: "rnn_state_h_2"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@rnn_state_h_2"
-      }
+      type: DT_INT32
     }
   }
 }
@@ -3098,7 +1891,7 @@ node {
 node {
   name: "rnn/while/Enter_2"
   op: "Enter"
-  input: "rnn_state_c_0/read"
+  input: "Reshape_1"
   attr {
     key: "T"
     value {
@@ -3127,7 +1920,7 @@ node {
 node {
   name: "rnn/while/Enter_3"
   op: "Enter"
-  input: "rnn_state_h_0/read"
+  input: "Reshape_2"
   attr {
     key: "T"
     value {
@@ -3156,7 +1949,7 @@ node {
 node {
   name: "rnn/while/Enter_4"
   op: "Enter"
-  input: "rnn_state_c_1/read"
+  input: "Reshape_3"
   attr {
     key: "T"
     value {
@@ -3185,7 +1978,7 @@ node {
 node {
   name: "rnn/while/Enter_5"
   op: "Enter"
-  input: "rnn_state_h_1/read"
+  input: "Reshape_4"
   attr {
     key: "T"
     value {
@@ -3214,7 +2007,7 @@ node {
 node {
   name: "rnn/while/Enter_6"
   op: "Enter"
-  input: "rnn_state_c_2/read"
+  input: "Reshape_5"
   attr {
     key: "T"
     value {
@@ -3243,7 +2036,7 @@ node {
 node {
   name: "rnn/while/Enter_7"
   op: "Enter"
-  input: "rnn_state_h_2/read"
+  input: "Reshape_6"
   attr {
     key: "T"
     value {
@@ -9496,6 +8289,103 @@ node {
   }
 }
 node {
+  name: "final_states/0"
+  op: "Pack"
+  input: "rnn/while/Exit_2"
+  input: "rnn/while/Exit_3"
+  attr {
+    key: "N"
+    value {
+      i: 2
+    }
+  }
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "axis"
+    value {
+      i: 0
+    }
+  }
+}
+node {
+  name: "final_states/1"
+  op: "Pack"
+  input: "rnn/while/Exit_4"
+  input: "rnn/while/Exit_5"
+  attr {
+    key: "N"
+    value {
+      i: 2
+    }
+  }
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "axis"
+    value {
+      i: 0
+    }
+  }
+}
+node {
+  name: "final_states/2"
+  op: "Pack"
+  input: "rnn/while/Exit_6"
+  input: "rnn/while/Exit_7"
+  attr {
+    key: "N"
+    value {
+      i: 2
+    }
+  }
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "axis"
+    value {
+      i: 0
+    }
+  }
+}
+node {
+  name: "final_states"
+  op: "Pack"
+  input: "final_states/0"
+  input: "final_states/1"
+  input: "final_states/2"
+  attr {
+    key: "N"
+    value {
+      i: 3
+    }
+  }
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "axis"
+    value {
+      i: 0
+    }
+  }
+}
+node {
   name: "truncated_normal/shape"
   op: "Const"
   attr {
@@ -9615,7 +8505,7 @@ node {
   }
 }
 node {
-  name: "Const"
+  name: "Const_3"
   op: "Const"
   attr {
     key: "dtype"
@@ -9760,7 +8650,7 @@ node {
   name: "bias/Assign"
   op: "Assign"
   input: "bias"
-  input: "Const"
+  input: "Const_3"
   attr {
     key: "T"
     value {
@@ -9808,7 +8698,7 @@ node {
   }
 }
 node {
-  name: "Reshape_1/shape"
+  name: "Reshape_7/shape"
   op: "Const"
   attr {
     key: "dtype"
@@ -9832,10 +8722,10 @@ node {
   }
 }
 node {
-  name: "Reshape_1"
+  name: "Reshape_7"
   op: "Reshape"
   input: "rnn/transpose"
-  input: "Reshape_1/shape"
+  input: "Reshape_7/shape"
   attr {
     key: "T"
     value {
@@ -9852,7 +8742,7 @@ node {
 node {
   name: "MatMul"
   op: "MatMul"
-  input: "Reshape_1"
+  input: "Reshape_7"
   input: "weight/read"
   attr {
     key: "T"
@@ -9886,7 +8776,7 @@ node {
   }
 }
 node {
-  name: "Reshape_2/shape"
+  name: "Reshape_8/shape"
   op: "Const"
   attr {
     key: "dtype"
@@ -9910,10 +8800,10 @@ node {
   }
 }
 node {
-  name: "Reshape_2"
+  name: "Reshape_8"
   op: "Reshape"
   input: "add"
-  input: "Reshape_2/shape"
+  input: "Reshape_8/shape"
   attr {
     key: "T"
     value {
@@ -10166,9 +9056,9 @@ node {
   }
 }
 node {
-  name: "Reshape_3"
+  name: "Reshape_9"
   op: "Reshape"
-  input: "Reshape_2"
+  input: "Reshape_8"
   input: "concat_2"
   attr {
     key: "T"
@@ -10186,7 +9076,7 @@ node {
 node {
   name: "Softmax"
   op: "Softmax"
-  input: "Reshape_3"
+  input: "Reshape_9"
   attr {
     key: "T"
     value {
@@ -10195,7 +9085,7 @@ node {
   }
 }
 node {
-  name: "Reshape_4"
+  name: "Reshape_10"
   op: "Reshape"
   input: "Softmax"
   input: "Shape"
@@ -10236,7 +9126,7 @@ node {
 node {
   name: "ArgMax"
   op: "ArgMax"
-  input: "Reshape_4"
+  input: "Reshape_10"
   input: "ArgMax/dimension"
   attr {
     key: "T"
@@ -10258,7 +9148,7 @@ node {
   }
 }
 node {
-  name: "Reshape_5/shape"
+  name: "Reshape_11/shape"
   op: "Const"
   attr {
     key: "dtype"
@@ -10282,10 +9172,10 @@ node {
   }
 }
 node {
-  name: "Reshape_5"
+  name: "Reshape_11"
   op: "Reshape"
   input: "ArgMax"
-  input: "Reshape_5/shape"
+  input: "Reshape_11/shape"
   attr {
     key: "T"
     value {
@@ -10302,7 +9192,7 @@ node {
 node {
   name: "Cast_1"
   op: "Cast"
-  input: "Reshape_5"
+  input: "Reshape_11"
   attr {
     key: "DstT"
     value {
@@ -10581,7 +9471,7 @@ node {
   }
 }
 node {
-  name: "Const_1"
+  name: "Const_4"
   op: "Const"
   attr {
     key: "dtype"
@@ -10726,7 +9616,7 @@ node {
   name: "bias_1/Assign"
   op: "Assign"
   input: "bias_1"
-  input: "Const_1"
+  input: "Const_4"
   attr {
     key: "T"
     value {
@@ -10776,7 +9666,7 @@ node {
 node {
   name: "MatMul_1"
   op: "MatMul"
-  input: "Reshape_1"
+  input: "Reshape_7"
   input: "weight_1/read"
   attr {
     key: "T"
@@ -10810,7 +9700,7 @@ node {
   }
 }
 node {
-  name: "Reshape_6/shape"
+  name: "Reshape_12/shape"
   op: "Const"
   attr {
     key: "dtype"
@@ -10834,10 +9724,10 @@ node {
   }
 }
 node {
-  name: "Reshape_6"
+  name: "Reshape_12"
   op: "Reshape"
   input: "add_1"
-  input: "Reshape_6/shape"
+  input: "Reshape_12/shape"
   attr {
     key: "T"
     value {
@@ -10854,7 +9744,7 @@ node {
 node {
   name: "Sigmoid"
   op: "Sigmoid"
-  input: "Reshape_6"
+  input: "Reshape_12"
   attr {
     key: "T"
     value {
@@ -10863,7 +9753,7 @@ node {
   }
 }
 node {
-  name: "Reshape_7/shape"
+  name: "Reshape_13/shape"
   op: "Const"
   attr {
     key: "dtype"
@@ -10887,10 +9777,10 @@ node {
   }
 }
 node {
-  name: "Reshape_7"
+  name: "Reshape_13"
   op: "Reshape"
   input: "Sigmoid"
-  input: "Reshape_7/shape"
+  input: "Reshape_13/shape"
   attr {
     key: "T"
     value {
@@ -10928,7 +9818,7 @@ node {
 node {
   name: "prediction"
   op: "ConcatV2"
-  input: "Reshape_4"
+  input: "Reshape_10"
   input: "Sigmoid"
   input: "prediction/axis"
   attr {
@@ -10975,7 +9865,7 @@ node {
   name: "output"
   op: "ConcatV2"
   input: "Add"
-  input: "Reshape_7"
+  input: "Reshape_13"
   input: "output/axis"
   attr {
     key: "N"
@@ -10997,340 +9887,14 @@ node {
   }
 }
 node {
-  name: "Assign"
-  op: "Assign"
-  input: "rnn_state_c_0"
-  input: "rnn/while/Exit_2"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@rnn_state_c_0"
-      }
-    }
-  }
-  attr {
-    key: "use_locking"
-    value {
-      b: false
-    }
-  }
-  attr {
-    key: "validate_shape"
-    value {
-      b: true
-    }
-  }
-}
-node {
-  name: "Assign_1"
-  op: "Assign"
-  input: "rnn_state_h_0"
-  input: "rnn/while/Exit_3"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@rnn_state_h_0"
-      }
-    }
-  }
-  attr {
-    key: "use_locking"
-    value {
-      b: false
-    }
-  }
-  attr {
-    key: "validate_shape"
-    value {
-      b: true
-    }
-  }
-}
-node {
-  name: "Assign_2"
-  op: "Assign"
-  input: "rnn_state_c_1"
-  input: "rnn/while/Exit_4"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@rnn_state_c_1"
-      }
-    }
-  }
-  attr {
-    key: "use_locking"
-    value {
-      b: false
-    }
-  }
-  attr {
-    key: "validate_shape"
-    value {
-      b: true
-    }
-  }
-}
-node {
-  name: "Assign_3"
-  op: "Assign"
-  input: "rnn_state_h_1"
-  input: "rnn/while/Exit_5"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@rnn_state_h_1"
-      }
-    }
-  }
-  attr {
-    key: "use_locking"
-    value {
-      b: false
-    }
-  }
-  attr {
-    key: "validate_shape"
-    value {
-      b: true
-    }
-  }
-}
-node {
-  name: "Assign_4"
-  op: "Assign"
-  input: "rnn_state_c_2"
-  input: "rnn/while/Exit_6"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@rnn_state_c_2"
-      }
-    }
-  }
-  attr {
-    key: "use_locking"
-    value {
-      b: false
-    }
-  }
-  attr {
-    key: "validate_shape"
-    value {
-      b: true
-    }
-  }
-}
-node {
-  name: "Assign_5"
-  op: "Assign"
-  input: "rnn_state_h_2"
-  input: "rnn/while/Exit_7"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@rnn_state_h_2"
-      }
-    }
-  }
-  attr {
-    key: "use_locking"
-    value {
-      b: false
-    }
-  }
-  attr {
-    key: "validate_shape"
-    value {
-      b: true
-    }
-  }
-}
-node {
-  name: "tuple/group_deps"
-  op: "NoOp"
-  input: "^Assign"
-  input: "^Assign_1"
-  input: "^Assign_2"
-  input: "^Assign_3"
-  input: "^Assign_4"
-  input: "^Assign_5"
-}
-node {
-  name: "tuple/control_dependency"
-  op: "RefIdentity"
-  input: "Assign"
-  input: "^tuple/group_deps"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@rnn_state_c_0"
-      }
-    }
-  }
-}
-node {
-  name: "tuple/control_dependency_1"
-  op: "RefIdentity"
-  input: "Assign_1"
-  input: "^tuple/group_deps"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@rnn_state_h_0"
-      }
-    }
-  }
-}
-node {
-  name: "tuple/control_dependency_2"
-  op: "RefIdentity"
-  input: "Assign_2"
-  input: "^tuple/group_deps"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@rnn_state_c_1"
-      }
-    }
-  }
-}
-node {
-  name: "tuple/control_dependency_3"
-  op: "RefIdentity"
-  input: "Assign_3"
-  input: "^tuple/group_deps"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@rnn_state_h_1"
-      }
-    }
-  }
-}
-node {
-  name: "tuple/control_dependency_4"
-  op: "RefIdentity"
-  input: "Assign_4"
-  input: "^tuple/group_deps"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@rnn_state_c_2"
-      }
-    }
-  }
-}
-node {
-  name: "tuple/control_dependency_5"
-  op: "RefIdentity"
-  input: "Assign_5"
-  input: "^tuple/group_deps"
-  attr {
-    key: "T"
-    value {
-      type: DT_FLOAT
-    }
-  }
-  attr {
-    key: "_class"
-    value {
-      list {
-        s: "loc:@rnn_state_h_2"
-      }
-    }
-  }
-}
-node {
-  name: "state_update/input"
+  name: "final_states_1/0"
   op: "Pack"
-  input: "tuple/control_dependency"
-  input: "tuple/control_dependency_1"
-  input: "tuple/control_dependency_2"
-  input: "tuple/control_dependency_3"
-  input: "tuple/control_dependency_4"
-  input: "tuple/control_dependency_5"
+  input: "rnn/while/Exit_2"
+  input: "rnn/while/Exit_3"
   attr {
     key: "N"
     value {
-      i: 6
+      i: 2
     }
   }
   attr {
@@ -11347,25 +9911,81 @@ node {
   }
 }
 node {
-  name: "state_update"
-  op: "Identity"
-  input: "state_update/input"
+  name: "final_states_1/1"
+  op: "Pack"
+  input: "rnn/while/Exit_4"
+  input: "rnn/while/Exit_5"
+  attr {
+    key: "N"
+    value {
+      i: 2
+    }
+  }
   attr {
     key: "T"
     value {
       type: DT_FLOAT
     }
   }
+  attr {
+    key: "axis"
+    value {
+      i: 0
+    }
+  }
+}
+node {
+  name: "final_states_1/2"
+  op: "Pack"
+  input: "rnn/while/Exit_6"
+  input: "rnn/while/Exit_7"
+  attr {
+    key: "N"
+    value {
+      i: 2
+    }
+  }
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "axis"
+    value {
+      i: 0
+    }
+  }
+}
+node {
+  name: "final_states_1"
+  op: "Pack"
+  input: "final_states_1/0"
+  input: "final_states_1/1"
+  input: "final_states_1/2"
+  attr {
+    key: "N"
+    value {
+      i: 3
+    }
+  }
+  attr {
+    key: "T"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "axis"
+    value {
+      i: 0
+    }
+  }
 }
 node {
   name: "init"
   op: "NoOp"
-  input: "^rnn_state_c_0/Assign"
-  input: "^rnn_state_h_0/Assign"
-  input: "^rnn_state_c_1/Assign"
-  input: "^rnn_state_h_1/Assign"
-  input: "^rnn_state_c_2/Assign"
-  input: "^rnn_state_h_2/Assign"
   input: "^rnn/multi_rnn_cell/cell_0/lstm_cell/kernel/Assign"
   input: "^rnn/multi_rnn_cell/cell_0/lstm_cell/bias/Assign"
   input: "^rnn/multi_rnn_cell/cell_0/lstm_cell/w_f_diag/Assign"
@@ -11385,25 +10005,6 @@ node {
   input: "^bias/Assign"
   input: "^weight_1/Assign"
   input: "^bias_1/Assign"
-}
-node {
-  name: "initVars"
-  op: "NoOp"
-  input: "^rnn_state_c_0/Assign"
-  input: "^rnn_state_h_0/Assign"
-  input: "^rnn_state_c_1/Assign"
-  input: "^rnn_state_h_1/Assign"
-  input: "^rnn_state_c_2/Assign"
-  input: "^rnn_state_h_2/Assign"
-  input: "^rnn/multi_rnn_cell/cell_0/lstm_cell/w_f_diag/Assign"
-  input: "^rnn/multi_rnn_cell/cell_0/lstm_cell/w_i_diag/Assign"
-  input: "^rnn/multi_rnn_cell/cell_0/lstm_cell/w_o_diag/Assign"
-  input: "^rnn/multi_rnn_cell/cell_1/lstm_cell/w_f_diag/Assign"
-  input: "^rnn/multi_rnn_cell/cell_1/lstm_cell/w_i_diag/Assign"
-  input: "^rnn/multi_rnn_cell/cell_1/lstm_cell/w_o_diag/Assign"
-  input: "^rnn/multi_rnn_cell/cell_2/lstm_cell/w_f_diag/Assign"
-  input: "^rnn/multi_rnn_cell/cell_2/lstm_cell/w_i_diag/Assign"
-  input: "^rnn/multi_rnn_cell/cell_2/lstm_cell/w_o_diag/Assign"
 }
 node {
   name: "save/Const"
